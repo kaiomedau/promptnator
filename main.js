@@ -2,7 +2,6 @@ const axios = require("axios");
 const cheerio = require("cheerio"); // new addition
 
 const purl = `https://fridaysupply.gumroad.com/l/free-procreate-pencil-brushes`;
-// const purl = `https://artwithflo.gumroad.com/l/ultimateprocreatebrushcollection`;
 
 async function scrapeSite() {
   const url = purl;
