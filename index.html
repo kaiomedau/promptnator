@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coletor de Informações</title>
+    <style>
+      .copied {
+        background-color: lightgreen;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Coletor de Informações de Página</h1>
+    <p>Insira uma URL abaixo para coletar informações:</p>
+    <input type="text" id="urlInput" placeholder="Insira a URL" />
+    <button onclick="coletarInformacoes()">Coletar Informações</button>
+    <div id="resultado"></div>
+    <div id="promptArea" style="margin-top: 20px"></div>
+
+    <script>
+      function coletarInformacoes() {
+        var url = document.getElementById("urlInput").value;
+
+        // Verificar se a URL foi inserida
+        if (!url) {
+          alert("Por favor, insira uma URL.");
+          return;
+        }
+
+        // Requisição para a API Proxy
+        var apiUrl =
+          "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+        fetch(apiUrl)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Erro ao buscar a página: " + response.status);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            // Extrair informações da página
+            var paginaHTML = data.contents;
+            var informacoes = extrairInformacoes(paginaHTML);
+
+            // Exibir as informações coletadas
+            exibirInformacoes(informacoes);
+            // Gerar e exibir o prompt
+            exibirPrompt(informacoes);
+          })
+          .catch((error) => {
+            alert("Erro: " + error.message);
+          });
+      }
+
+      function extrairInformacoes(paginaHTML) {
+        // Aqui você pode usar métodos como querySelector, getElementsByTagName, etc.
+        // para extrair informações específicas da página
+        // Por exemplo:
+        var rating = extractContent(paginaHTML, "header .rating");
+        var title = extractContent(paginaHTML, "h1");
+        var user = extractContent(paginaHTML, "section.details .user");
+        var user_url = extractAttribute(
+          paginaHTML,
+          "section.details .user",
+          "href"
+        );
+        var price = extractAttribute(
+          paginaHTML,
+          "section.details .price",
+          "content"
+        );
+        var description = extractContent(
+          paginaHTML,
+          "section section div.rich-text"
+        );
+        var image = extractAttribute(
+          paginaHTML,
+          ".carousel .preview-content",
+          "src"
+        );
+
+        return {
+          rating: rating,
+          title: title,
+          user: user,
+          user_url: user_url,
+          price: price,
+          description: description,
+          image: image,
+        };
+      }
+
+      function extractContent(html, selector) {
+        var element = document.createElement("div");
+        element.innerHTML = html;
+        var content = element.querySelector(selector);
+        return content ? content.textContent.trim() : "";
+      }
+
+      function extractAttribute(html, selector, attribute) {
+        var element = document.createElement("div");
+        element.innerHTML = html;
+        var content = element.querySelector(selector);
+        return content ? content.getAttribute(attribute) : "";
+      }
+
+      function exibirInformacoes(informacoes) {
+        var resultadoDiv = document.getElementById("resultado");
+        resultadoDiv.innerHTML =
+          "<h2>Informações Coletadas:</h2>" +
+          "<p>Rating: <input type='text' id='rating' value='" +
+          informacoes.rating +
+          "'><button onclick='copiarTexto(\"rating\")'>Copiar</button></p>" +
+          "<p>Title: <input type='text' id='title' value='" +
+          informacoes.title +
+          "'><button onclick='copiarTexto(\"title\")'>Copiar</button></p>" +
+          "<p>User: <input type='text' id='user' value='" +
+          informacoes.user +
+          "'><button onclick='copiarTexto(\"user\")'>Copiar</button></p>" +
+          "<p>User URL: <input type='text' id='user_url' value='" +
+          informacoes.user_url +
+          "'><button onclick='copiarTexto(\"user_url\")'>Copiar</button></p>" +
+          "<p>Price: <input type='text' id='price' value='" +
+          informacoes.price +
+          "'><button onclick='copiarTexto(\"price\")'>Copiar</button></p>" +
+          "<p>Description: <input type='text' id='description' value='" +
+          informacoes.description +
+          "'><button onclick='copiarTexto(\"description\")'>Copiar</button></p>" +
+          "<p>Image: <input type='text' id='image' value='" +
+          informacoes.image +
+          "'><button onclick='copiarTexto(\"image\")'>Copiar</button></p>";
+      }
+
+      function copiarTexto(idCampo) {
+        var campo = document.getElementById(idCampo);
+        campo.select();
+        document.execCommand("copy");
+        campo.classList.add("copied");
+        setTimeout(function () {
+          campo.classList.remove("copied");
+        }, 3000);
+      }
+
+      function exibirPrompt(informacoes) {
+        var promptArea = document.getElementById("promptArea");
+        var prompt =
+          "[task] Redigir uma descrição do produto com base nas informações fornecidas. \n" +
+          "[context] Este texto será usado para descrever um conjunto de pincéis disponibilizado em nosso site para download direto na loja do criador. \n" +
+          "[format] O texto deve ter pelo menos 600 caracteres e não deve dar a impressão de que o autor do texto é o criador do produto. \n" +
+          "[Informações] \n";
+        prompt += informacoes.title + " by " + informacoes.user + "\n";
+        if (informacoes.rating) {
+          prompt += "Rating: " + informacoes.rating + "\n";
+        }
+        if (informacoes.price) {
+          prompt +=
+            "Price: " + (informacoes.price > 0 ? "Paid" : "Free") + "\n";
+        }
+        if (informacoes.description) {
+          prompt += informacoes.description;
+        }
+        var promptTextarea = document.createElement("textarea");
+        promptTextarea.value = prompt;
+        promptTextarea.rows = "10";
+        promptTextarea.style.width = "100%";
+        promptArea.innerHTML = "<h2>Prompt Gerado:</h2>";
+        promptArea.appendChild(promptTextarea);
+        var copiarPromptBtn = document.createElement("button");
+        copiarPromptBtn.textContent = "Copiar Prompt";
+        copiarPromptBtn.onclick = function () {
+          copiarTexto("promptTextArea");
+        };
+        promptArea.appendChild(copiarPromptBtn);
+      }
+    </script>
+  </body>
+</html>

@@ -38,7 +38,10 @@ scrapeSite()
     const p = result[0];
 
     var prompt =
-      "Por gentileza, você pode criar uma descrição em português com no mínimo 500 caracteres sobre o produto abaixo. Caso o texto esteja na primeira pessoa, mude para que fique claro que eu não sou o criador desse produto ou ilustrações relacionadas à ele: \n";
+      "[task] Redigir uma descrição do produto com base nas informações fornecidas. \n" +
+      "[context] Este texto será usado para descrever um conjunto de pincéis disponibilizado em nosso site para download direto na loja do criador. \n" +
+      "[format] O texto deve ter pelo menos 600 caracteres e não deve dar a impressão de que o autor do texto é o criador do produto. \n" +
+      "[Informações] ";
 
     prompt += p.title + " by " + p.user + "\n";
     if (p.rating) {
