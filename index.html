@@ -74,11 +74,6 @@
           paginaHTML,
           "section section div.rich-text"
         );
-        var image = extractAttribute(
-          paginaHTML,
-          ".carousel .preview-content",
-          "src"
-        );
 
         return {
           rating: rating,
@@ -87,7 +82,6 @@
           user_url: user_url,
           price: price,
           description: description,
-          image: image,
         };
       }
 
@@ -126,10 +120,7 @@
           "'><button onclick='copiarTexto(\"price\")'>Copiar</button></p>" +
           "<p>Description: <input type='text' id='description' value='" +
           informacoes.description +
-          "'><button onclick='copiarTexto(\"description\")'>Copiar</button></p>" +
-          "<p>Image: <input type='text' id='image' value='" +
-          informacoes.image +
-          "'><button onclick='copiarTexto(\"image\")'>Copiar</button></p>";
+          "'><button onclick='copiarTexto(\"description\")'>Copiar</button></p>";
       }
 
       function copiarTexto(idCampo) {
@@ -161,6 +152,7 @@
           prompt += informacoes.description;
         }
         var promptTextarea = document.createElement("textarea");
+        promptTextarea.id = "promptTextArea";
         promptTextarea.value = prompt;
         promptTextarea.rows = "10";
         promptTextarea.style.width = "100%";
